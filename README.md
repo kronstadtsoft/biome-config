@@ -33,7 +33,7 @@ Add the check scripts to `package.json`.
   "scripts": {
     "check": "biome check --error-on-warnings .",
     "check:fix": "biome check --write .",
-    "check:suppressions": "! git grep -nE 'biome-ignore(-all)?[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs'"
+    "check:suppressions": "! git grep -nE 'biome-ignore-all[[:space:]]+lint[a-zA-Z0-9/-]*[[:space:]]*:|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc'"
   }
 }
 ```
@@ -101,7 +101,7 @@ These forms were measured on Biome 2.5.6. Two other forms do not suppress the pl
 | `// biome-ignore lint/<group>/<rule>: reason` | The plugin still reports, and Biome adds a `suppressions/unused` warning |
 | `overrides[].plugins: []` | The plugin still reports |
 
-## Ban the blanket forms
+## Ban the blanket forms, and every file-wide form
 
 A suppression comment that names no rule suppresses the plugin, and every other lint rule with it:
 
@@ -111,23 +111,34 @@ A suppression comment that names no rule suppresses the plugin, and every other 
 Both forms are banned. An author who writes one intends to suppress one rule, and suppresses all of
 them. Use `// biome-ignore lint/plugin/no-cast:` instead, which names its target.
 
+One more form is banned, and it does name its target:
+
+- `// biome-ignore-all lint/plugin/no-cast: reason` suppresses the rule in the whole file.
+
+A named suppression is allowed because a reader sees the rule and the reason beside the code it
+covers. A file-wide comment covers code a reader never sees, and covers code added later. Bound it
+instead: name the rule on the line, or open a `biome-ignore-start` range and close it.
+
 Biome cannot enforce this ban. Version 2.5.6 has no rule that makes a suppression name its target.
 A GritQL plugin cannot enforce it either, because Biome holds comments as trivia and not as nodes.
 So the mechanism is a grep gate, and every repository adds it:
 
 ```bash
-git grep -nE 'biome-ignore(-all)?[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs'
+git grep -nE 'biome-ignore-all[[:space:]]+lint[a-zA-Z0-9/-]*[[:space:]]*:|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc'
 ```
 
 The build fails when the pattern matches.
 
 Write the pattern exactly as it appears above. Biome accepts any run of spaces or tabs between the
 tokens, and before the colon, so `//   biome-ignore   lint   :   reason` suppresses as well. A
-pattern with a single literal space misses all three variants. Biome also lints eight JS-family
-extensions, so a gate limited to `*.ts` and `*.tsx` misses a blanket comment in the other six.
+pattern with a single literal space misses all three variants. Biome lints CSS and JSON as well as
+eight JS-family extensions, so a gate limited to `*.ts` and `*.tsx` misses a blanket comment
+everywhere else.
 
-The pattern does not match `lint/plugin/no-cast`, `lint/plugin`, or any built-in rule name, because
-each of those continues with `/` where the pattern needs a colon. A blanket
+The first alternative matches every `biome-ignore-all` that reaches a colon, named or not, because a
+file-wide suppression is banned in both forms. The second matches only a `biome-ignore` that reaches
+a colon with nothing between, so a named line suppression and a named range both pass. Both
+alternatives require the colon, so prose naming a form is not a match. A blanket
 `// biome-ignore-start lint:` needs no rule here: Biome does not honour it, and the plugin still
 reports.
 

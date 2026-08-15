@@ -1,6 +1,6 @@
 {
   "name": "@kronstadtsoft/biome-config",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The shared Biome configuration for Kronstadtsoft TypeScript projects.",
   "license": "MIT",
   "type": "module",
@@ -29,7 +29,7 @@
   "scripts": {
     "check": "biome check --error-on-warnings .",
     "check:fix": "biome check --write .",
-    "check:suppressions": "! git grep -nE 'biome-ignore(-all)?[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' ':(exclude)test/fixtures'",
+    "check:suppressions": "! git grep -nE 'biome-ignore-all[[:space:]]+lint[a-zA-Z0-9/-]*[[:space:]]*:|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc' ':(exclude)test/fixtures'",
     "typecheck": "tsc --noEmit",
     "test": "bun run test/self-test.ts"
   },

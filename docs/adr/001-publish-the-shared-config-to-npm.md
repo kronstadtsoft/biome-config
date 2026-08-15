@@ -41,9 +41,11 @@ The package cannot declare the plugin path for the consumer. Biome does not reso
 `extends` boundary, so every consumer repeats the path in its own `biome.jsonc`. The self-test in
 this repository measures that behaviour, so a Biome release that changes it is visible.
 
-Adoption changes the diagnostics a repository gets. `extends` replaces an array and a preset; it does not merge
-either. A repository that raised a preset above the base, or turned off a rule the base leaves on,
-must keep those settings declared locally. `README.md` states what to check.
+Adoption changes the diagnostics a repository gets. `extends` merges, measured on Biome 2.5.6: a
+child's `files.includes` entries add to the base list rather than replacing it, and a child's rule
+settings override the base rule by rule, leaving each rule the child does not name in force. A
+repository that raised a preset above the base, or turned off a rule the base leaves on, keeps
+those settings by declaring them locally. `README.md` states what to check.
 
 Publishing is a manual act by the owner. CI holds no npm token, so a compromised workflow cannot
 publish the rule set that formats many files.

@@ -101,6 +101,13 @@ const cases: Expectation[] = [
     contains: '',
   },
   {
+    name: 'a named `biome-ignore-all lint/plugin/no-cast` suppresses the whole file too',
+    ...plugin(PLUGIN_ON, 'test/fixtures/suppressed-all-named.ts'),
+    exitCode: 0,
+    hits: 0,
+    contains: '',
+  },
+  {
     name: 'several spaces between the tokens still suppress',
     ...plugin(PLUGIN_ON, 'test/fixtures/suppressed-spaces.ts'),
     exitCode: 0,
@@ -170,8 +177,18 @@ const gateCases: GateExpectation[] = [
   },
   { name: 'the gate catches the file form', fixture: 'suppressed-all-blanket.ts', caught: true },
   {
+    name: 'the gate catches a named file form, which silences as much as a blanket one',
+    fixture: 'suppressed-all-named.ts',
+    caught: true,
+  },
+  {
     name: 'the gate catches a blanket form in `.mts`',
     fixture: 'suppressed-blanket.mts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a blanket form in `.css`, which Biome lints too',
+    fixture: 'suppressed-blanket.css',
     caught: true,
   },
   {

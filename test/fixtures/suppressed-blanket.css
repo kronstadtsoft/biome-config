@@ -1,0 +1,4 @@
+/* biome-ignore lint: a blanket suppression in CSS, banned by the grep gate. */
+a {
+  color: #fff;
+}
