@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Pushes to main run to completion, so every commit on the default branch gets a verdict.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: lint / typecheck / self-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint and format check
+        run: pnpm run check
+
+      # Biome 2.5.6 has no rule that makes a suppression name its target, so a grep gate is the
+      # only mechanism. A blanket suppression turns off every rule on the line, this plugin too.
+      - name: No blanket suppressions
+        run: pnpm run check:suppressions
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Self-test
+        run: pnpm run test
+
+      # Unfiltered on purpose: any file a step above rewrote is drift, whatever its path.
+      - name: Check the tree is unchanged
+        run: git diff --exit-code

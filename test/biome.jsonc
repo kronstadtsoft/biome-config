@@ -1,0 +1,31 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.6/schema.json",
+  // A nested configuration file applies to its own directory. It does not chain: a second
+  // nested file under `fixtures/` is ignored, so the fixture rules live here as an override.
+  "root": false,
+  "extends": "//",
+  "linter": {
+    "rules": {
+      // The self-test is a Bun program. It spawns Biome, reads the environment, and reports on
+      // stdout. Nothing else in the repository may do any of the three.
+      "correctness": {
+        "noNodejsModules": "off",
+        "noProcessGlobal": "off"
+      },
+      "style": {
+        "noProcessEnv": "off"
+      },
+      "suspicious": {
+        "noConsole": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      // The fixtures are inputs to the self-test, not example code. Each one holds the exact
+      // defect the self-test expects the plugin to report, so the linter must not judge them.
+      "includes": ["**/fixtures/**"],
+      "linter": { "enabled": false }
+    }
+  ]
+}

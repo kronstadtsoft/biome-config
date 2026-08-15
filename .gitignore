@@ -1,0 +1,12 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# generated
+*.tsbuildinfo
+
+# editor / os
+.DS_Store
+*.log
+npm-debug.log*
+pnpm-debug.log*

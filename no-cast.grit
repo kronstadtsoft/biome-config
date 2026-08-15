@@ -1,0 +1,5 @@
+language js
+
+`$expr as $type` where {
+  register_diagnostic(span=$type, message="Type assertions are banned. Correct the type at its source, or narrow the value with a type guard.")
+}

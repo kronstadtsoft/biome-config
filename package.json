@@ -1,0 +1,44 @@
+{
+  "name": "@kronstadtsoft/biome-config",
+  "version": "0.1.0",
+  "description": "The shared Biome configuration for Kronstadtsoft TypeScript projects.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kronstadtsoft/biome-config.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./biome.jsonc",
+  "exports": {
+    ".": "./biome.jsonc",
+    "./biome": "./biome.jsonc",
+    "./no-cast.grit": "./no-cast.grit",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "biome.jsonc",
+    "no-cast.grit"
+  ],
+  "scripts": {
+    "check": "biome check --error-on-warnings .",
+    "check:fix": "biome check --write .",
+    "check:suppressions": "! git grep -nE 'biome-ignore(-all)?[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' ':(exclude)test/fixtures'",
+    "typecheck": "tsc --noEmit",
+    "test": "bun run test/self-test.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.6",
+    "@types/node": "^24.13.0",
+    "typescript": "7.0.2"
+  },
+  "peerDependencies": {
+    "@biomejs/biome": "^2.5.6"
+  }
+}
