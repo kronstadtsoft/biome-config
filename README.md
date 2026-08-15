@@ -33,7 +33,7 @@ Add the check scripts to `package.json`.
   "scripts": {
     "check": "biome check --error-on-warnings .",
     "check:fix": "biome check --write .",
-    "check:suppressions": "! git grep -nE 'biome-ignore-all[[:space:]]+lint|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc'"
+    "check:suppressions": "! git grep -nE 'biome-ignore-all[[:space:]]+lint[a-zA-Z0-9/-]*[[:space:]]*:|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc'"
   }
 }
 ```
@@ -124,7 +124,7 @@ A GritQL plugin cannot enforce it either, because Biome holds comments as trivia
 So the mechanism is a grep gate, and every repository adds it:
 
 ```bash
-git grep -nE 'biome-ignore-all[[:space:]]+lint|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc'
+git grep -nE 'biome-ignore-all[[:space:]]+lint[a-zA-Z0-9/-]*[[:space:]]*:|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc'
 ```
 
 The build fails when the pattern matches.
@@ -135,9 +135,10 @@ pattern with a single literal space misses all three variants. Biome lints CSS a
 eight JS-family extensions, so a gate limited to `*.ts` and `*.tsx` misses a blanket comment
 everywhere else.
 
-The first alternative matches every `biome-ignore-all`, named or not, because a file-wide
-suppression is banned in both forms. The second matches only a `biome-ignore` that reaches a colon
-with nothing between, so a named line suppression and a named range both pass. A blanket
+The first alternative matches every `biome-ignore-all` that reaches a colon, named or not, because a
+file-wide suppression is banned in both forms. The second matches only a `biome-ignore` that reaches
+a colon with nothing between, so a named line suppression and a named range both pass. Both
+alternatives require the colon, so prose naming a form is not a match. A blanket
 `// biome-ignore-start lint:` needs no rule here: Biome does not honour it, and the plugin still
 reports.
 

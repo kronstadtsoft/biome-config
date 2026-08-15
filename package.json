@@ -29,7 +29,7 @@
   "scripts": {
     "check": "biome check --error-on-warnings .",
     "check:fix": "biome check --write .",
-    "check:suppressions": "! git grep -nE 'biome-ignore-all[[:space:]]+lint|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc' ':(exclude)test/fixtures'",
+    "check:suppressions": "! git grep -nE 'biome-ignore-all[[:space:]]+lint[a-zA-Z0-9/-]*[[:space:]]*:|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc' ':(exclude)test/fixtures'",
     "typecheck": "tsc --noEmit",
     "test": "bun run test/self-test.ts"
   },
