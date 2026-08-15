@@ -187,6 +187,11 @@ const gateCases: GateExpectation[] = [
     caught: true,
   },
   {
+    name: 'the gate catches a blanket form in `.css`, which Biome lints too',
+    fixture: 'suppressed-blanket.css',
+    caught: true,
+  },
+  {
     name: 'the gate passes `lint/plugin/no-cast`',
     fixture: 'suppressed-plugin-named.ts',
     caught: false,

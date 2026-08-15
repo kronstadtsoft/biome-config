@@ -33,7 +33,7 @@ Add the check scripts to `package.json`.
   "scripts": {
     "check": "biome check --error-on-warnings .",
     "check:fix": "biome check --write .",
-    "check:suppressions": "! git grep -nE 'biome-ignore-all[[:space:]]+lint|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs'"
+    "check:suppressions": "! git grep -nE 'biome-ignore-all[[:space:]]+lint|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc'"
   }
 }
 ```
@@ -124,15 +124,16 @@ A GritQL plugin cannot enforce it either, because Biome holds comments as trivia
 So the mechanism is a grep gate, and every repository adds it:
 
 ```bash
-git grep -nE 'biome-ignore-all[[:space:]]+lint|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs'
+git grep -nE 'biome-ignore-all[[:space:]]+lint|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc'
 ```
 
 The build fails when the pattern matches.
 
 Write the pattern exactly as it appears above. Biome accepts any run of spaces or tabs between the
 tokens, and before the colon, so `//   biome-ignore   lint   :   reason` suppresses as well. A
-pattern with a single literal space misses all three variants. Biome also lints eight JS-family
-extensions, so a gate limited to `*.ts` and `*.tsx` misses a blanket comment in the other six.
+pattern with a single literal space misses all three variants. Biome lints CSS and JSON as well as
+eight JS-family extensions, so a gate limited to `*.ts` and `*.tsx` misses a blanket comment
+everywhere else.
 
 The first alternative matches every `biome-ignore-all`, named or not, because a file-wide
 suppression is banned in both forms. The second matches only a `biome-ignore` that reaches a colon
