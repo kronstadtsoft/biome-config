@@ -1,6 +1,6 @@
 <!--
   GENERATED FILE — DO NOT EDIT HERE.
-  Source: kronstadtsoft/rules · rules/kfi-workflow.md · rule set v2.1.0
+  Source: kronstadtsoft/rules · rules/kfi-workflow.md · rule set v2.2.0
   Change the source there and run: bun run scripts/apply.ts --target <this repo>
   A local edit fails the drift check in CI and is reverted by the next sync.
 -->
@@ -11,19 +11,35 @@
 next day, so it applies to work planned under it and not to work already started. Branches open
 on 10 August keep their names; every branch from 11 August complies.
 
+**Ticket scope narrowed on 27 September 2026.** From that date, a Linear ticket is required only
+for client work. The Administrator made this decision. Branches opened before that date keep
+their names.
+
 The rules apply to every repository. An exception is a decision; record it.
 
 ## Ticket → branch → PR → merge
 
-Every change to `main` has a Linear ticket behind it. The ticket identifies the work and links its requirements evidence.
-The pull request is the review record. The merge is the approval. All three are required.
+The pull request is the review record. The merge is the approval. Every change needs both.
 
-1. **Create the ticket first.** No ticket, no branch. Fold small work into a ticket that
-   exists.
-2. **Start the branch name with the ticket**, in Linear's own format:
-   `alexandruadam/kfi-42-short-slug`. This name links the PR to the issue and moves the issue
-   to `In Review`. A different name needs an explicit issue link. Copy the name from
-   the issue; do not type it.
+**Client work needs a Linear ticket first.** Client work is:
+
+- any change in a repository whose work profile is `customer-engagement` in
+  `internal/qms/repos.json` (today: `rezervari`);
+- any change made under a customer agreement, in any other repository.
+
+The ticket holds the acceptance criteria and the authoriser.
+
+**Other work needs no ticket.** This is internal operations, owned products, experiments and
+services in use. The pull request is the record. Use a ticket when the work spans several pull
+requests or needs follow-up.
+
+1. **Client work: create the ticket first.** No ticket, no branch. Fold small work into a ticket
+   that exists.
+2. **Name the branch.** For client work, start the branch name with the ticket, in Linear's own
+   format: `alexandruadam/kfi-42-short-slug`. This name links the PR to the issue and moves the
+   issue to `In Review`. Copy the name from the issue; do not type it. For other work, use a
+   short descriptive name, for example `alexandruadam/fix-biome-excludes`. If other work has a
+   ticket, use the ticket's branch name.
 3. **Open a pull request for every change.** Never push to `main`. GitHub refuses a direct push
    through a branch-protection ruleset with no bypass actors, on every repo. The local
    `pre-push` hook refuses it a second earlier. GitHub refuses a force-push to `main` and
@@ -75,8 +91,8 @@ The format is `docs/adr/000-template.md` in each repo.
 source in `kronstadtsoft/rules` and run the sync. The next sync reverts a local edit, and the
 drift check fails until then.
 
-**Do not work without the ticket open.** The ticket holds the acceptance criteria and the
-authoriser. Work ticketed after the fact records the outcome, not the requirement.
+**Do not start client work without the ticket open.** The ticket holds the acceptance criteria
+and the authoriser. Work ticketed after the fact records the outcome, not the requirement.
 
 ## Bypassing the hooks
 
@@ -84,4 +100,4 @@ A `PreToolUse` hook refuses `--no-verify`, `git commit -n`, `core.hooksPath` ove
 `HUSKY=0`. The hook binds the agent, not the person. A person at a terminal can still type the
 bypass, and must be able to, because emergencies exist.
 
-If a push is rejected, fix the branch or the ticket, never use the flag.
+If a push is rejected, fix the branch name or create the ticket. Never use the flag.
