@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// GENERATED — DO NOT EDIT HERE. Source: kronstadtsoft/rules · claude/hooks/block-hook-bypass.ts (rule set v2.1.0)
+// GENERATED — DO NOT EDIT HERE. Source: kronstadtsoft/rules · claude/hooks/block-hook-bypass.ts (rule set v2.2.0)
 // Change the source there and run: bun run scripts/apply.ts --target <this repo>
 
 type PreToolUse = {
@@ -34,14 +34,14 @@ console.error(
   [
     `Blocked: ${hit.what} disables the git hooks.`,
     "",
-    "The pre-push hook is what enforces two rules in .claude/rules/kfi-workflow.md:",
+    "The pre-push hook enforces two rules in .claude/rules/kfi-workflow.md:",
     "  · no direct push to main",
-    "  · every branch names its Linear ticket (alexandruadam/kfi-<n>-<slug>)",
+    "  · in client-work repos, every branch names its Linear ticket (alexandruadam/kfi-<n>-<slug>)",
     "",
-    "If the push was rejected, the fix is the branch or the ticket, not the flag:",
-    "  · no ticket yet      → create one, then rename the branch to match",
-    "  · wrong branch name  → git branch -m alexandruadam/kfi-<n>-<slug>",
-    "  · pushing to main    → open a pull request",
+    "If the push was rejected, fix the branch or the ticket, not the flag:",
+    "  · client work, no ticket yet  → create one, then rename the branch to match",
+    "  · client work, wrong name     → git branch -m alexandruadam/kfi-<n>-<slug>",
+    "  · pushing to main             → open a pull request",
     "",
     "A genuine emergency is a decision, not a keystroke. Ask the administrator to run it,",
     "and record why in the QMS.",
