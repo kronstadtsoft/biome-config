@@ -38,9 +38,9 @@ Add the check scripts to `package.json`.
 }
 ```
 
-Copy [`scripts/check-suppressions.ts`](scripts/check-suppressions.ts) to the same path in your
-repository. Delete this repository's `test/` entries from its `EXCLUDED` list. Give `scripts/` an
-`overrides` entry that turns off `noNodejsModules` and `noConsole`.
+Copy [`scripts/check-suppressions.ts`](scripts/check-suppressions.ts) byte for byte to the same
+path in your repository. Give `scripts/**` an `overrides` entry that turns off `noNodejsModules`
+and `noConsole`. A path given as an argument is skipped; this repository skips `test/fixtures/`.
 
 Run all three in CI. The section [Ban the blanket forms](#ban-the-blanket-forms-and-every-file-wide-form)
 explains the third.
@@ -128,10 +128,11 @@ instead: name the rule on the line, or open a `biome-ignore-start` range and clo
 
 Biome cannot enforce this ban. Version 2.5.6 has no rule that makes a suppression name its target.
 A GritQL plugin cannot enforce it either, because Biome holds comments as trivia and not as nodes.
-So every repository runs `scripts/check-suppressions.ts`. The script fails the run when a line:
+So every repository runs `scripts/check-suppressions.ts`. The script reads each comment that opens
+with a suppression (`//`, `/*` or `<!--`), and fails the run when the comment:
 
-- holds `biome-ignore-all`, in any form;
-- holds `biome-ignore`, `biome-ignore-start` or `biome-ignore-end` with a target that is not
+- is a `biome-ignore-all`, in any form;
+- is a `biome-ignore`, `biome-ignore-start` or `biome-ignore-end` with a target that is not
   `lint/<group>/<rule>` or `assist/<group>/<action>`. A bare `lint:`, `format:` or `assist:` fails.
   A group alone, such as `lint/plugin:`, fails.
 

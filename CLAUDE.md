@@ -64,17 +64,13 @@ change.
 Biome 2.5.6 has no rule that makes a suppression name its target. A GritQL plugin cannot supply one,
 because Biome holds comments as trivia and not as nodes, so no pattern matches a comment. The gate
 is `pnpm check:suppressions`, which runs `scripts/check-suppressions.ts`. CI runs it. Every
-consumer repository holds a copy of the script at the same path.
+consumer repository holds a byte-for-byte copy at the same path. `README.md` states what it bans.
+The self-test reads the `check:suppressions` script from `package.json` and runs it, so a weakened
+script makes the suite fail.
 
-The script reads tracked and untracked files. It fails every `biome-ignore-all`, and every
-`biome-ignore`, `-start` or `-end` whose target is not `lint/<group>/<rule>` or
-`assist/<group>/<action>`. It allows any run of spaces or tabs, as Biome does. The self-test reads
-the `check:suppressions` script from `package.json` and runs it, so a weakened script makes the
-suite fail.
-
-The gate skips `test/fixtures` and `test/cases.ts`, because those files are this repository's
-record of the banned forms. It does not skip `test/self-test.ts`. So keep suppression text out of
-that file, or the gate matches the test that guards it.
+The script here gets `test/fixtures/` as an argument, because those files are this repository's
+record of the banned forms. Nothing else is skipped. So write no suppression comment in a test
+file, or the gate matches the test that guards it.
 
 ## A third fact, about this repository only
 

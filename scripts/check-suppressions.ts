@@ -2,21 +2,20 @@ import { execFileSync } from 'node:child_process'
 import { readFileSync, statSync } from 'node:fs'
 import process from 'node:process'
 
-const EXCLUDED = ['scripts/check-suppressions.ts', 'test/fixtures/', 'test/cases.ts']
+const excluded = process.argv.slice(2)
 const SOURCE = /\.(?:[cm]?[jt]sx?|css|jsonc?|grit|html|vue|svelte|astro|graphql|gql)$/
-const FILE_WIDE = /biome-ignore-all\b/
-const SUPPRESSION = /biome-ignore(?:-start|-end)?\s+([^\s:]+)\s*:/
+const SUPPRESSION = /(?:\/\/|\/\*|<!--)\**\s*biome-ignore(-all|-start|-end)?\s*([^\s:]*)/
 const RULE = /^(?:lint|assist)\/[\w-]+\/[\w-]+(?:\([^\s)]*\))?$/
 
 function violation(line: string): string | undefined {
-  if (!line.includes('biome-ignore')) {
+  const match = SUPPRESSION.exec(line)
+  if (match === null) {
     return undefined
   }
-  if (FILE_WIDE.test(line)) {
+  if (match[1] === '-all') {
     return 'file-wide suppression'
   }
-  const target = SUPPRESSION.exec(line)?.[1] ?? ''
-  return RULE.test(target) ? undefined : 'suppression must name lint/<group>/<rule>'
+  return RULE.test(match[2] ?? '') ? undefined : 'names no lint/<group>/<rule>'
 }
 
 const files = execFileSync(
@@ -28,23 +27,22 @@ const files = execFileSync(
   .filter(
     (file) =>
       SOURCE.test(file) &&
-      !EXCLUDED.some((excluded) => file.startsWith(excluded)) &&
+      !excluded.some((path) => file.startsWith(path)) &&
       statSync(file, { throwIfNoEntry: false })?.isFile() === true,
   )
 
-const findings = files.flatMap((file) =>
-  readFileSync(file, 'utf8')
-    .split('\n')
-    .flatMap((line, index) => {
-      const reason = violation(line)
-      return reason === undefined ? [] : [`${file}:${index + 1}: ${reason}: ${line.trim()}`]
-    }),
-)
+const findings: string[] = []
+for (const file of files) {
+  const lines = readFileSync(file, 'utf8').split('\n')
+  for (const [index, line] of lines.entries()) {
+    const reason = violation(line)
+    if (reason !== undefined) {
+      findings.push(`${file}:${index + 1}: ${reason}: ${line.trim()}`)
+    }
+  }
+}
 
 if (findings.length > 0) {
-  console.error('A suppression must be bounded and name lint/<group>/<rule>:')
-  for (const finding of findings) {
-    console.error(finding)
-  }
-  process.exit(1)
+  console.error(['A suppression must be bounded and name one rule:', ...findings].join('\n'))
+  process.exitCode = 1
 }

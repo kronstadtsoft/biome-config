@@ -111,16 +111,18 @@ for (const expected of cases) {
 }
 
 // The gate runs as the shell command package.json declares, inside a throwaway git repository.
-// Each fixture runs once untracked and once staged, because a new file is untracked until its
+// Each fixture runs once untracked and once tracked, because a new file is untracked until its
 // author adds it. The fixture goes to `src/` because the real script excludes `test/fixtures`,
 // where these banned forms are kept on purpose.
-function runGate(fixture: string, staged: boolean): number {
+const SCRIPT = join('scripts', 'check-suppressions.ts')
+
+function runGate(fixture: string, tracked: boolean): number {
   const repo = mkdtempSync(join(tmpdir(), 'biome-gate-'))
   mkdirSync(join(repo, 'src'))
-  cpSync(join(root, 'scripts'), join(repo, 'scripts'), { recursive: true })
+  cpSync(join(root, SCRIPT), join(repo, SCRIPT))
   cpSync(join(root, 'test', 'fixtures', fixture), join(repo, 'src', fixture))
   spawnSync('git', ['init', '-q'], { cwd: repo })
-  if (staged) {
+  if (tracked) {
     spawnSync('git', ['add', '-N', '.'], { cwd: repo })
   }
   const result = spawnSync('sh', ['-c', GATE], { cwd: repo, encoding: 'utf8' })
@@ -128,13 +130,11 @@ function runGate(fixture: string, staged: boolean): number {
   return result.status ?? -1
 }
 
-const STATES = [false, true]
-
 for (const expected of gateCases) {
-  for (const staged of STATES) {
-    const exitCode = runGate(expected.fixture, staged)
+  for (const tracked of [false, true]) {
+    const exitCode = runGate(expected.fixture, tracked)
     const wanted = expected.caught ? 1 : 0
-    const name = `${expected.name} (${staged ? 'staged' : 'untracked'})`
+    const name = `${expected.name} (${tracked ? 'tracked' : 'untracked'})`
 
     if (exitCode === wanted) {
       console.log(`  PASS  ${name}`)
@@ -150,6 +150,6 @@ for (const expected of gateCases) {
 
 rmSync(sandbox, { recursive: true, force: true })
 
-const total = cases.length + gateCases.length * STATES.length
+const total = cases.length + gateCases.length * 2
 console.log(`\n${total - failed}/${total} passed.`)
 process.exitCode = failed === 0 ? 0 : 1
