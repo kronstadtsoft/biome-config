@@ -1,0 +1,4 @@
+query Record {
+  # biome-ignore lint: a blanket suppression in GraphQL.
+  record
+}

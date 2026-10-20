@@ -94,6 +94,13 @@ const cases: Expectation[] = [
     contains: '',
   },
   {
+    name: 'a blanket suppression on a line inside a block comment suppresses the plugin',
+    ...plugin(PLUGIN_ON, 'test/fixtures/suppressed-block-star.ts'),
+    exitCode: 0,
+    hits: 0,
+    contains: '',
+  },
+  {
     name: 'a blanket `biome-ignore-all lint` suppresses the whole file',
     ...plugin(PLUGIN_ON, 'test/fixtures/suppressed-all-blanket.ts'),
     exitCode: 0,
@@ -192,11 +199,55 @@ const gateCases: GateExpectation[] = [
     caught: true,
   },
   {
+    name: 'the gate catches a file-wide `format` suppression',
+    fixture: 'suppressed-all-format.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a file-wide `assist` suppression that names its action',
+    fixture: 'suppressed-all-assist.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a range that names no rule',
+    fixture: 'suppressed-range-blanket.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a line-level `format` suppression',
+    fixture: 'suppressed-format.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a blanket form on a `*` line of a block comment',
+    fixture: 'suppressed-block-star.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a blanket form on a bare line of a block comment',
+    fixture: 'suppressed-block-bare.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a blanket form after a named one on the same line',
+    fixture: 'suppressed-second-on-line.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a blanket form in a GraphQL `#` comment',
+    fixture: 'suppressed-blanket.graphql',
+    caught: true,
+  },
+  {
+    name: 'the gate catches `lint/plugin`, which names a group and no rule',
+    fixture: 'suppressed-plugin-group.ts',
+    caught: true,
+  },
+  {
     name: 'the gate passes `lint/plugin/no-cast`',
     fixture: 'suppressed-plugin-named.ts',
     caught: false,
   },
-  { name: 'the gate passes `lint/plugin`', fixture: 'suppressed-plugin-group.ts', caught: false },
   { name: 'the gate passes a built-in rule name', fixture: 'suppressed-scoped.ts', caught: false },
   { name: 'the gate passes a named range', fixture: 'suppressed-range-named.ts', caught: false },
   { name: 'the gate passes a file with no suppression', fixture: 'has-cast.ts', caught: false },

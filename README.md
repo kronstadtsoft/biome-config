@@ -33,12 +33,18 @@ Add the check scripts to `package.json`.
   "scripts": {
     "check": "biome check --error-on-warnings .",
     "check:fix": "biome check --write .",
-    "check:suppressions": "! git grep -nE 'biome-ignore-all[[:space:]]+lint[a-zA-Z0-9/-]*[[:space:]]*:|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc'"
+    "check:suppressions": "bun scripts/check-suppressions.ts"
   }
 }
 ```
 
-Run all three in CI. The section [Ban the blanket forms](#ban-the-blanket-forms) explains the third.
+Copy [`scripts/check-suppressions.ts`](scripts/check-suppressions.ts) byte for byte to the same
+path in your repository. Run it with Bun; in CI, add `oven-sh/setup-bun` before the step. Give
+`scripts/**` an `overrides` entry that turns off `noNodejsModules`
+and `noConsole`. A path given as an argument is skipped; this repository skips `test/fixtures/`.
+
+Run all three in CI. The section [Ban the blanket forms](#ban-the-blanket-forms-and-every-file-wide-form)
+explains the third.
 
 The base sets `vcs.useIgnoreFile: true`, so Biome needs an ignore file. A `.gitignore` supplies one.
 So does the `.git/info/exclude` file that `git init` and `git clone` create. Biome stops with
@@ -111,9 +117,11 @@ A suppression comment that names no rule suppresses the plugin, and every other 
 Both forms are banned. An author who writes one intends to suppress one rule, and suppresses all of
 them. Use `// biome-ignore lint/plugin/no-cast:` instead, which names its target.
 
-One more form is banned, and it does name its target:
+Every file-wide form is banned, whatever it names:
 
 - `// biome-ignore-all lint/plugin/no-cast: reason` suppresses the rule in the whole file.
+- `// biome-ignore-all format: reason` turns the formatter off for the whole file.
+- `// biome-ignore-all assist/source/organizeImports: reason` turns the action off for the whole file.
 
 A named suppression is allowed because a reader sees the rule and the reason beside the code it
 covers. A file-wide comment covers code a reader never sees, and covers code added later. Bound it
@@ -121,26 +129,20 @@ instead: name the rule on the line, or open a `biome-ignore-start` range and clo
 
 Biome cannot enforce this ban. Version 2.5.6 has no rule that makes a suppression name its target.
 A GritQL plugin cannot enforce it either, because Biome holds comments as trivia and not as nodes.
-So the mechanism is a grep gate, and every repository adds it:
+So every repository runs `scripts/check-suppressions.ts`. The script reads each suppression that
+starts a comment (`//`, `/*`, `<!--` or `#`) or a line of a block comment, and fails the run when
+the suppression:
 
-```bash
-git grep -nE 'biome-ignore-all[[:space:]]+lint[a-zA-Z0-9/-]*[[:space:]]*:|biome-ignore[[:space:]]+lint[[:space:]]*:' -- '*.ts' '*.tsx' '*.mts' '*.cts' '*.js' '*.jsx' '*.mjs' '*.cjs' '*.css' '*.json' '*.jsonc'
-```
+- is a `biome-ignore-all`, in any form;
+- is a `biome-ignore`, `biome-ignore-start` or `biome-ignore-end` with a target that is not
+  `lint/<group>/<rule>` or `assist/<group>/<action>`. A bare `lint:`, `format:` or `assist:` fails.
+  A group alone, such as `lint/plugin:`, fails.
 
-The build fails when the pattern matches.
-
-Write the pattern exactly as it appears above. Biome accepts any run of spaces or tabs between the
-tokens, and before the colon, so `//   biome-ignore   lint   :   reason` suppresses as well. A
-pattern with a single literal space misses all three variants. Biome lints CSS and JSON as well as
-eight JS-family extensions, so a gate limited to `*.ts` and `*.tsx` misses a blanket comment
-everywhere else.
-
-The first alternative matches every `biome-ignore-all` that reaches a colon, named or not, because a
-file-wide suppression is banned in both forms. The second matches only a `biome-ignore` that reaches
-a colon with nothing between, so a named line suppression and a named range both pass. Both
-alternatives require the colon, so prose naming a form is not a match. A blanket
-`// biome-ignore-start lint:` needs no rule here: Biome does not honour it, and the plugin still
-reports.
+The script reads tracked and untracked files (`git ls-files --cached --others --exclude-standard`),
+so a new file fails before its author adds it. It reads every extension Biome processes, not only
+`*.ts`. It allows any run of spaces or tabs between the tokens and before the colon, as Biome does.
+Biome itself rejects a suppression with no reason and a range end with no start, so the script does
+not check those.
 
 ## What this package holds, and what your repository holds
 
@@ -188,4 +190,5 @@ pnpm test
 `pnpm test` runs `test/self-test.ts` with Bun. The script copies the fixtures to a temporary
 directory, runs Biome against them, and asserts the exit code and the diagnostic count of each case.
 It builds two consumer projects that install this package, to measure the `extends` boundary. It
-also runs the grep gate pattern against the fixtures, in both directions. CI runs the same commands.
+also runs the `check:suppressions` script against each gate fixture, untracked and staged, in
+both directions. CI runs the same commands.

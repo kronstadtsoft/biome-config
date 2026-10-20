@@ -29,5 +29,5 @@
 
     "types": ["node"]
   },
-  "include": ["test/**/*.ts"]
+  "include": ["scripts/**/*.ts", "test/**/*.ts"]
 }

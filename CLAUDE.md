@@ -17,6 +17,8 @@ Read `README.md` for the consumer instructions. This file holds what a contribut
 | `test/configs/` | The three Biome configurations the self-test drives |
 | `test/fixtures/` | The TypeScript inputs the self-test measures |
 | `test/biome.jsonc` | The nested configuration that lets `test/` hold a Bun program and broken fixtures |
+| `scripts/check-suppressions.ts` | The suppressions gate. Every consumer holds a byte-for-byte copy |
+| `scripts/biome.jsonc` | The nested configuration that lets the gate import Node modules and print |
 
 `package.json` publishes only `biome.jsonc` and `no-cast.grit`. Everything else exists to prove
 those two files work.
@@ -39,14 +41,14 @@ directory, or a generated file of one project.
 `biome.jsonc` fails in the consumer with `Error(s) during loading of plugins: Cannot read file.`
 The consumer must declare the path. Do not move the `plugins` declaration into the base.
 
-**A suppression comment can turn the plugin off, in five forms.** Three are sanctioned and two are
+**A suppression comment can turn the plugin off, in five forms.** Two are sanctioned and three are
 banned:
 
 | Form | Effect | Status |
 |---|---|---|
 | `// biome-ignore lint/plugin/no-cast:` | Suppresses this plugin on one line, and nothing else | Sanctioned |
 | `// biome-ignore-start lint/plugin/no-cast:` | The same, over a range that `-end` closes | Sanctioned |
-| `// biome-ignore lint/plugin:` | Suppresses every plugin on one line | Allowed, less precise |
+| `// biome-ignore lint/plugin:` | Suppresses every plugin on one line | **Banned** |
 | `// biome-ignore lint:` | Suppresses every rule on one line | **Banned** |
 | `// biome-ignore-all lint:` | Suppresses every rule in the file | **Banned** |
 
@@ -59,27 +61,29 @@ We measured both facts on Biome 2.5.6, and the self-test asserts every row above
 upgrade that changes one makes the self-test fail. Fix `README.md` and `CLAUDE.md` in the same
 change.
 
-## The blanket ban runs on grep, not on Biome
+## The ban runs in a script, not in Biome
 
 Biome 2.5.6 has no rule that makes a suppression name its target. A GritQL plugin cannot supply one,
 because Biome holds comments as trivia and not as nodes, so no pattern matches a comment. The gate
-is `pnpm check:suppressions`, which is a `git grep` for the two banned forms. CI runs it.
+is `pnpm check:suppressions`, which runs `scripts/check-suppressions.ts`. CI runs it. Every
+consumer repository holds a byte-for-byte copy at the same path. `README.md` states what it bans.
+The self-test reads the `check:suppressions` script from `package.json` and runs it, so a weakened
+script makes the suite fail.
 
-The pattern is loose on purpose. Biome accepts any run of spaces or tabs between the tokens and
-before the colon, and it lints eight JS-family extensions. A pattern with one literal space, or a
-pathspec of `*.ts` and `*.tsx` alone, is defeated by four one-character edits. Write the pattern
-once, in `package.json`. The self-test reads that script and runs it, so a weakened script makes
-the suite fail.
-
-The gate skips `test/fixtures`, because those files are this repository's record of the banned
-forms. It does not skip `test/self-test.ts`. So write a case name there without the literal text
-`lint:`, or the gate matches the test that guards it.
+The script here gets `test/fixtures/` as an argument, because those files are this repository's
+record of the banned forms. Nothing else is skipped. So write no suppression comment in a test
+file, or the gate matches the test that guards it.
 
 ## A third fact, about this repository only
 
 A nested Biome configuration file does not chain. `test/biome.jsonc` applies to `test/`, and a
 second nested file under `test/fixtures/` is ignored. The fixture rules therefore live in an
-`overrides` entry inside `test/biome.jsonc`.
+`overrides` entry inside `test/biome.jsonc`. The root `biome.jsonc` is the published base, so an
+exemption for `scripts/` lives in `scripts/biome.jsonc`, not in a root `overrides` entry.
+
+Biome 2.5.6 sometimes does not apply a nested configuration file, and `pnpm check` then fails on
+`test/self-test.ts` or `scripts/check-suppressions.ts`. Biome 2.5.15 does not. Keep the dev
+dependency at 2.5.15 or later.
 
 That override turns the linter off for the fixtures, and a nested configuration still applies when
 `--config-path` names another file. So the self-test copies the fixtures to a temporary directory
@@ -90,7 +94,7 @@ before it runs Biome. Do not point the self-test at the fixtures in place.
 | | |
 | --- | --- |
 | `pnpm check` | Biome. `pnpm check:fix` to apply |
-| `pnpm check:suppressions` | The grep gate for banned suppression forms |
+| `pnpm check:suppressions` | The gate for banned suppression forms |
 | `pnpm typecheck` | TypeScript, no emit |
 | `pnpm test` | The self-test |
 
