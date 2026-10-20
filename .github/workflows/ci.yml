@@ -38,7 +38,7 @@ jobs:
       - name: Lint and format check
         run: pnpm run check
 
-      # Biome 2.5.6 has no rule that makes a suppression name its target, so a grep gate is the
+      # Biome 2.5.6 has no rule that makes a suppression name its target, so a script is the
       # only mechanism. A blanket suppression turns off every rule on the line, this plugin too.
       - name: No blanket suppressions
         run: pnpm run check:suppressions

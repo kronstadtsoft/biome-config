@@ -192,11 +192,35 @@ const gateCases: GateExpectation[] = [
     caught: true,
   },
   {
+    name: 'the gate catches a file-wide `format` suppression',
+    fixture: 'suppressed-all-format.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a file-wide `assist` suppression that names its action',
+    fixture: 'suppressed-all-assist.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a range that names no rule',
+    fixture: 'suppressed-range-blanket.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a line-level `format` suppression',
+    fixture: 'suppressed-format.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches `lint/plugin`, which names a group and no rule',
+    fixture: 'suppressed-plugin-group.ts',
+    caught: true,
+  },
+  {
     name: 'the gate passes `lint/plugin/no-cast`',
     fixture: 'suppressed-plugin-named.ts',
     caught: false,
   },
-  { name: 'the gate passes `lint/plugin`', fixture: 'suppressed-plugin-group.ts', caught: false },
   { name: 'the gate passes a built-in rule name', fixture: 'suppressed-scoped.ts', caught: false },
   { name: 'the gate passes a named range', fixture: 'suppressed-range-named.ts', caught: false },
   { name: 'the gate passes a file with no suppression', fixture: 'has-cast.ts', caught: false },

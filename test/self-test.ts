@@ -111,36 +111,45 @@ for (const expected of cases) {
 }
 
 // The gate runs as the shell command package.json declares, inside a throwaway git repository.
-// `git grep` reads tracked files only, so the fixture is staged first. The fixture goes to `src/`
-// because the real script excludes `test/fixtures`, where these banned forms are kept on purpose.
-function runGate(fixture: string): number {
+// Each fixture runs once untracked and once staged, because a new file is untracked until its
+// author adds it. The fixture goes to `src/` because the real script excludes `test/fixtures`,
+// where these banned forms are kept on purpose.
+function runGate(fixture: string, staged: boolean): number {
   const repo = mkdtempSync(join(tmpdir(), 'biome-gate-'))
   mkdirSync(join(repo, 'src'))
+  cpSync(join(root, 'scripts'), join(repo, 'scripts'), { recursive: true })
   cpSync(join(root, 'test', 'fixtures', fixture), join(repo, 'src', fixture))
   spawnSync('git', ['init', '-q'], { cwd: repo })
-  spawnSync('git', ['add', '-N', '.'], { cwd: repo })
+  if (staged) {
+    spawnSync('git', ['add', '-N', '.'], { cwd: repo })
+  }
   const result = spawnSync('sh', ['-c', GATE], { cwd: repo, encoding: 'utf8' })
   rmSync(repo, { recursive: true, force: true })
   return result.status ?? -1
 }
 
-for (const expected of gateCases) {
-  const exitCode = runGate(expected.fixture)
-  const wanted = expected.caught ? 1 : 0
+const STATES = [false, true]
 
-  if (exitCode === wanted) {
-    console.log(`  PASS  ${expected.name}`)
-  } else {
-    failed += 1
-    console.log(`  FAIL  ${expected.name}`)
-    console.log(`        fixture  ${expected.fixture}`)
-    console.log(`        expected the gate to ${expected.caught ? 'fail' : 'pass'}`)
-    console.log(`        got      exit ${exitCode}`)
+for (const expected of gateCases) {
+  for (const staged of STATES) {
+    const exitCode = runGate(expected.fixture, staged)
+    const wanted = expected.caught ? 1 : 0
+    const name = `${expected.name} (${staged ? 'staged' : 'untracked'})`
+
+    if (exitCode === wanted) {
+      console.log(`  PASS  ${name}`)
+    } else {
+      failed += 1
+      console.log(`  FAIL  ${name}`)
+      console.log(`        fixture  ${expected.fixture}`)
+      console.log(`        expected the gate to ${expected.caught ? 'fail' : 'pass'}`)
+      console.log(`        got      exit ${exitCode}`)
+    }
   }
 }
 
 rmSync(sandbox, { recursive: true, force: true })
 
-const total = cases.length + gateCases.length
+const total = cases.length + gateCases.length * STATES.length
 console.log(`\n${total - failed}/${total} passed.`)
 process.exitCode = failed === 0 ? 0 : 1

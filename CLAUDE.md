@@ -39,14 +39,14 @@ directory, or a generated file of one project.
 `biome.jsonc` fails in the consumer with `Error(s) during loading of plugins: Cannot read file.`
 The consumer must declare the path. Do not move the `plugins` declaration into the base.
 
-**A suppression comment can turn the plugin off, in five forms.** Three are sanctioned and two are
+**A suppression comment can turn the plugin off, in five forms.** Two are sanctioned and three are
 banned:
 
 | Form | Effect | Status |
 |---|---|---|
 | `// biome-ignore lint/plugin/no-cast:` | Suppresses this plugin on one line, and nothing else | Sanctioned |
 | `// biome-ignore-start lint/plugin/no-cast:` | The same, over a range that `-end` closes | Sanctioned |
-| `// biome-ignore lint/plugin:` | Suppresses every plugin on one line | Allowed, less precise |
+| `// biome-ignore lint/plugin:` | Suppresses every plugin on one line | **Banned** |
 | `// biome-ignore lint:` | Suppresses every rule on one line | **Banned** |
 | `// biome-ignore-all lint:` | Suppresses every rule in the file | **Banned** |
 
@@ -59,21 +59,22 @@ We measured both facts on Biome 2.5.6, and the self-test asserts every row above
 upgrade that changes one makes the self-test fail. Fix `README.md` and `CLAUDE.md` in the same
 change.
 
-## The blanket ban runs on grep, not on Biome
+## The ban runs in a script, not in Biome
 
 Biome 2.5.6 has no rule that makes a suppression name its target. A GritQL plugin cannot supply one,
 because Biome holds comments as trivia and not as nodes, so no pattern matches a comment. The gate
-is `pnpm check:suppressions`, which is a `git grep` for the two banned forms. CI runs it.
+is `pnpm check:suppressions`, which runs `scripts/check-suppressions.ts`. CI runs it. Every
+consumer repository holds a copy of the script at the same path.
 
-The pattern is loose on purpose. Biome accepts any run of spaces or tabs between the tokens and
-before the colon, and it lints eight JS-family extensions. A pattern with one literal space, or a
-pathspec of `*.ts` and `*.tsx` alone, is defeated by four one-character edits. Write the pattern
-once, in `package.json`. The self-test reads that script and runs it, so a weakened script makes
-the suite fail.
+The script reads tracked and untracked files. It fails every `biome-ignore-all`, and every
+`biome-ignore`, `-start` or `-end` whose target is not `lint/<group>/<rule>` or
+`assist/<group>/<action>`. It allows any run of spaces or tabs, as Biome does. The self-test reads
+the `check:suppressions` script from `package.json` and runs it, so a weakened script makes the
+suite fail.
 
-The gate skips `test/fixtures`, because those files are this repository's record of the banned
-forms. It does not skip `test/self-test.ts`. So write a case name there without the literal text
-`lint:`, or the gate matches the test that guards it.
+The gate skips `test/fixtures` and `test/cases.ts`, because those files are this repository's
+record of the banned forms. It does not skip `test/self-test.ts`. So keep suppression text out of
+that file, or the gate matches the test that guards it.
 
 ## A third fact, about this repository only
 
@@ -90,7 +91,7 @@ before it runs Biome. Do not point the self-test at the fixtures in place.
 | | |
 | --- | --- |
 | `pnpm check` | Biome. `pnpm check:fix` to apply |
-| `pnpm check:suppressions` | The grep gate for banned suppression forms |
+| `pnpm check:suppressions` | The gate for banned suppression forms |
 | `pnpm typecheck` | TypeScript, no emit |
 | `pnpm test` | The self-test |
 
