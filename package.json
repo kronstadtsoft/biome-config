@@ -34,7 +34,7 @@
     "test": "bun run test/self-test.ts"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.6",
+    "@biomejs/biome": "2.5.15",
     "@types/node": "^24.13.0",
     "typescript": "7.0.2"
   },
