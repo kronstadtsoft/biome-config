@@ -94,6 +94,13 @@ const cases: Expectation[] = [
     contains: '',
   },
   {
+    name: 'a blanket suppression on a line inside a block comment suppresses the plugin',
+    ...plugin(PLUGIN_ON, 'test/fixtures/suppressed-block-star.ts'),
+    exitCode: 0,
+    hits: 0,
+    contains: '',
+  },
+  {
     name: 'a blanket `biome-ignore-all lint` suppresses the whole file',
     ...plugin(PLUGIN_ON, 'test/fixtures/suppressed-all-blanket.ts'),
     exitCode: 0,
@@ -209,6 +216,26 @@ const gateCases: GateExpectation[] = [
   {
     name: 'the gate catches a line-level `format` suppression',
     fixture: 'suppressed-format.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a blanket form on a `*` line of a block comment',
+    fixture: 'suppressed-block-star.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a blanket form on a bare line of a block comment',
+    fixture: 'suppressed-block-bare.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a blanket form after a named one on the same line',
+    fixture: 'suppressed-second-on-line.ts',
+    caught: true,
+  },
+  {
+    name: 'the gate catches a blanket form in a GraphQL `#` comment',
+    fixture: 'suppressed-blanket.graphql',
     caught: true,
   },
   {

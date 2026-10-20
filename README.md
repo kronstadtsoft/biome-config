@@ -33,13 +33,14 @@ Add the check scripts to `package.json`.
   "scripts": {
     "check": "biome check --error-on-warnings .",
     "check:fix": "biome check --write .",
-    "check:suppressions": "node scripts/check-suppressions.ts"
+    "check:suppressions": "bun scripts/check-suppressions.ts"
   }
 }
 ```
 
 Copy [`scripts/check-suppressions.ts`](scripts/check-suppressions.ts) byte for byte to the same
-path in your repository. Give `scripts/**` an `overrides` entry that turns off `noNodejsModules`
+path in your repository. Run it with Bun; in CI, add `oven-sh/setup-bun` before the step. Give
+`scripts/**` an `overrides` entry that turns off `noNodejsModules`
 and `noConsole`. A path given as an argument is skipped; this repository skips `test/fixtures/`.
 
 Run all three in CI. The section [Ban the blanket forms](#ban-the-blanket-forms-and-every-file-wide-form)
@@ -128,8 +129,9 @@ instead: name the rule on the line, or open a `biome-ignore-start` range and clo
 
 Biome cannot enforce this ban. Version 2.5.6 has no rule that makes a suppression name its target.
 A GritQL plugin cannot enforce it either, because Biome holds comments as trivia and not as nodes.
-So every repository runs `scripts/check-suppressions.ts`. The script reads each comment that opens
-with a suppression (`//`, `/*` or `<!--`), and fails the run when the comment:
+So every repository runs `scripts/check-suppressions.ts`. The script reads each suppression that
+starts a comment (`//`, `/*`, `<!--` or `#`) or a line of a block comment, and fails the run when
+the suppression:
 
 - is a `biome-ignore-all`, in any form;
 - is a `biome-ignore`, `biome-ignore-start` or `biome-ignore-end` with a target that is not

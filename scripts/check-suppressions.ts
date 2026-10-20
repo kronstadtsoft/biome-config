@@ -4,18 +4,21 @@ import process from 'node:process'
 
 const excluded = process.argv.slice(2)
 const SOURCE = /\.(?:[cm]?[jt]sx?|css|jsonc?|grit|html|vue|svelte|astro|graphql|gql)$/
-const SUPPRESSION = /(?:\/\/|\/\*|<!--)\**\s*biome-ignore(-all|-start|-end)?\s*([^\s:]*)/
+// Biome reads a suppression on any line of a block comment, with or without a leading `*`.
+// The group around the token keeps this line from matching itself.
+const SUPPRESSION = /(?:^|\/\/|\*|<!--|#)\s*(?:biome-ignore)(-all|-start|-end)?\s*([^\s:]*)/g
 const RULE = /^(?:lint|assist)\/[\w-]+\/[\w-]+(?:\([^\s)]*\))?$/
 
-function violation(line: string): string | undefined {
-  const match = SUPPRESSION.exec(line)
-  if (match === null) {
-    return undefined
+function violations(line: string): string[] {
+  const reasons: string[] = []
+  for (const [, kind, target] of line.matchAll(SUPPRESSION)) {
+    if (kind === '-all') {
+      reasons.push('file-wide suppression')
+    } else if (!RULE.test(target ?? '')) {
+      reasons.push('names no lint/<group>/<rule>')
+    }
   }
-  if (match[1] === '-all') {
-    return 'file-wide suppression'
-  }
-  return RULE.test(match[2] ?? '') ? undefined : 'names no lint/<group>/<rule>'
+  return reasons
 }
 
 const files = execFileSync(
@@ -35,8 +38,7 @@ const findings: string[] = []
 for (const file of files) {
   const lines = readFileSync(file, 'utf8').split('\n')
   for (const [index, line] of lines.entries()) {
-    const reason = violation(line)
-    if (reason !== undefined) {
+    for (const reason of violations(line)) {
       findings.push(`${file}:${index + 1}: ${reason}: ${line.trim()}`)
     }
   }

@@ -29,7 +29,7 @@
   "scripts": {
     "check": "biome check --error-on-warnings .",
     "check:fix": "biome check --write .",
-    "check:suppressions": "node scripts/check-suppressions.ts test/fixtures/",
+    "check:suppressions": "bun scripts/check-suppressions.ts test/fixtures/",
     "typecheck": "tsc --noEmit",
     "test": "bun run test/self-test.ts"
   },

@@ -17,6 +17,8 @@ Read `README.md` for the consumer instructions. This file holds what a contribut
 | `test/configs/` | The three Biome configurations the self-test drives |
 | `test/fixtures/` | The TypeScript inputs the self-test measures |
 | `test/biome.jsonc` | The nested configuration that lets `test/` hold a Bun program and broken fixtures |
+| `scripts/check-suppressions.ts` | The suppressions gate. Every consumer holds a byte-for-byte copy |
+| `scripts/biome.jsonc` | The nested configuration that lets the gate import Node modules and print |
 
 `package.json` publishes only `biome.jsonc` and `no-cast.grit`. Everything else exists to prove
 those two files work.
@@ -76,7 +78,12 @@ file, or the gate matches the test that guards it.
 
 A nested Biome configuration file does not chain. `test/biome.jsonc` applies to `test/`, and a
 second nested file under `test/fixtures/` is ignored. The fixture rules therefore live in an
-`overrides` entry inside `test/biome.jsonc`.
+`overrides` entry inside `test/biome.jsonc`. The root `biome.jsonc` is the published base, so an
+exemption for `scripts/` lives in `scripts/biome.jsonc`, not in a root `overrides` entry.
+
+Biome 2.5.6 sometimes does not apply a nested configuration file, and `pnpm check` then fails on
+`test/self-test.ts` or `scripts/check-suppressions.ts`. Biome 2.5.15 does not. Keep the dev
+dependency at 2.5.15 or later.
 
 That override turns the linter off for the fixtures, and a nested configuration still applies when
 `--config-path` names another file. So the self-test copies the fixtures to a temporary directory
