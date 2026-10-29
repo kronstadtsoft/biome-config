@@ -1,6 +1,6 @@
 <!--
   GENERATED FILE — DO NOT EDIT HERE.
-  Source: kronstadtsoft/rules · rules/kfi-workflow.md · rule set v2.2.0
+  Source: kronstadtsoft/rules · rules/kfi-workflow.md · rule set v2.3.0
   Change the source there and run: bun run scripts/apply.ts --target <this repo>
   A local edit fails the drift check in CI and is reverted by the next sync.
 -->
@@ -47,8 +47,43 @@ requests or needs follow-up.
 4. **Merge with squash only.** The merge is the approval. Squash is the only method enabled, so
    every commit on `main` carries `(#N)` and maps to exactly one pull request. Write the squash
    subject as the change's real summary. The subject is the permanent record, not the branch's
-   commit list. The merge button works only when CI is green and the branch is current with
-   `main`.
+   commit list. The merge button works only when the required checks are green. Production
+   repositories also require the branch to be current with `main`.
+5. **Turn on auto-merge when you open the pull request.** Do not wait for CI. GitHub merges the
+   pull request when the required checks pass.
+
+## Delivery tiers
+
+**In force from 29 October 2026.** The Administrator made this decision on that date.
+
+The tier sets the merge and release controls. The work profile in `internal/qms/repos.json`
+sets the tier.
+
+| Tier | Work profile | Repositories today |
+|---|---|---|
+| Production | `customer-engagement` or `service-in-use` | `rezervari`, `rezervari-ancuta-bucur`, `kronstadtsoft` |
+| Build | any other profile, or no entry | all others |
+
+**Production.**
+
+- Required checks include browser (e2e) tests on every pull request.
+- The branch must be current with `main` before merge.
+- An agent may merge after the required checks pass.
+- A person creates the release tag. The release needs green checks, e2e included, on the tagged
+  commit.
+
+**Build.**
+
+- Required checks on a pull request are the fast checks only: install, static checks, unit
+  tests and build. Browser (e2e) tests are not required on a pull request.
+- The branch does not need to be current with `main`.
+- An agent may merge after the required checks pass.
+- Browser (e2e) tests run on `main` after merge. One run covers all merges since the last run.
+- When a check on `main` fails, the agent fixes it with a new pull request, or reverts the
+  pull request that caused the failure.
+- Deploy only a `main` commit with green checks, e2e included.
+
+A code review check becomes required in both tiers when its workflow exists in the repository.
 
 ## Commits
 
