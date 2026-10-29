@@ -1,6 +1,6 @@
 <!--
   GENERATED FILE — DO NOT EDIT HERE.
-  Source: kronstadtsoft/rules · rules/kfi-workflow.md · rule set v2.3.0
+  Source: kronstadtsoft/rules · rules/kfi-workflow.md · rule set v2.4.1
   Change the source there and run: bun run scripts/apply.ts --target <this repo>
   A local edit fails the drift check in CI and is reverted by the next sync.
 -->
@@ -24,7 +24,7 @@ The pull request is the review record. The merge is the approval. Every change n
 **Client work needs a Linear ticket first.** Client work is:
 
 - any change in a repository whose work profile is `customer-engagement` in
-  `internal/qms/repos.json` (today: `rezervari`);
+  `internal/qms/repos.json` (today: `rezervari` and `rezervari-ancuta-bucur`);
 - any change made under a customer agreement, in any other repository.
 
 The ticket holds the acceptance criteria and the authoriser.
@@ -83,7 +83,28 @@ sets the tier.
   pull request that caused the failure.
 - Deploy only a `main` commit with green checks, e2e included.
 
-A code review check becomes required in both tiers when its workflow exists in the repository.
+## Pre-PR checklist
+
+**In force from 30 October 2026.** The Administrator made this decision on that date.
+
+Every pull request, in both tiers and from every author, carries the checklist from
+`.github/pull_request_template.md`:
+
+1. **Simplified.** Run the `simplify` skill once on the whole branch diff.
+2. **Code reviewed.** Review the branch diff at high effort. Use Codex Sol (the
+   `delegate-to-codex` skill) when Codex is installed, because it saves the Claude
+   subscriptions. Otherwise use the `code-review` skill. Fix each confirmed finding, or give a
+   one-line reason for a dismissed finding.
+3. **Verified in a real flow.** Exercise the changed behaviour as a user would, and write what
+   you ran and the result.
+
+Write the short SHA of the head commit in `Checked at commit`, then tick the boxes. The
+`ship` skill (plugin `kronstadtsoft-ship`) runs the steps and fills the checklist.
+
+The required check `pr-checklist` fails until every box is ticked, each result is written, and
+`Checked at commit` is the head commit. A new commit makes the check fail again: check the new
+commits, then update the checklist. A tick is the author's statement. GitHub keeps the edit
+history of the PR body as the record of who ticked each box and when.
 
 ## Commits
 
