@@ -1,0 +1,20 @@
+name: PR checklist
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: pr-checklist-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checklist:
+    name: pr-checklist
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 3
+    steps:
+      - uses: kronstadtsoft/internal/qms/actions/pr-checklist@main
