@@ -14,7 +14,7 @@ permissions:
 jobs:
   checklist:
     name: pr-checklist
-    runs-on: [self-hosted, linux]
+    runs-on: [small]
     timeout-minutes: 3
     steps:
       - uses: kronstadtsoft/internal/qms/actions/pr-checklist@main
