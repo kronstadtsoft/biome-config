@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// GENERATED — DO NOT EDIT HERE. Source: kronstadtsoft/rules · claude/hooks/block-hook-bypass.ts (rule set v2.4.1)
+// GENERATED — DO NOT EDIT HERE. Source: kronstadtsoft/rules · claude/hooks/block-hook-bypass.ts (rule set v2.4.4)
 // Change the source there and run: bun run scripts/apply.ts --target <this repo>
 
 type PreToolUse = {

@@ -1,6 +1,6 @@
 <!--
   GENERATED FILE — DO NOT EDIT HERE.
-  Source: kronstadtsoft/rules · rules/kfi-workflow.md · rule set v2.4.1
+  Source: kronstadtsoft/rules · rules/kfi-workflow.md · rule set v2.4.4
   Change the source there and run: bun run scripts/apply.ts --target <this repo>
   A local edit fails the drift check in CI and is reverted by the next sync.
 -->
@@ -105,6 +105,11 @@ The required check `pr-checklist` fails until every box is ticked, each result i
 `Checked at commit` is the head commit. A new commit makes the check fail again: check the new
 commits, then update the checklist. A tick is the author's statement. GitHub keeps the edit
 history of the PR body as the record of who ticked each box and when.
+
+**Public repositories (today: `biome-config`).** A public repository cannot use the check
+action, which is in a private repository. There the `pr-checklist` job skips and is not
+required. The checklist still applies: the author fills it in before the merge. The
+Administrator made this decision on 30 October 2026.
 
 ## Commits
 
