@@ -1,6 +1,6 @@
 <!--
   GENERATED FILE — DO NOT EDIT HERE.
-  Source: kronstadtsoft/rules · rules/kfi-workflow.md · rule set v2.4.2
+  Source: kronstadtsoft/rules · rules/kfi-workflow.md · rule set v2.4.3
   Change the source there and run: bun run scripts/apply.ts --target <this repo>
   A local edit fails the drift check in CI and is reverted by the next sync.
 -->

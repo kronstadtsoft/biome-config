@@ -14,7 +14,8 @@ permissions:
 jobs:
   checklist:
     name: pr-checklist
-    runs-on: [small]
+    # The Default runner group refuses public repositories; GitHub-hosted minutes are free for them.
+    runs-on: ${{ github.event.repository.private && 'small' || 'ubuntu-latest' }}
     timeout-minutes: 3
     steps:
       - uses: kronstadtsoft/internal/qms/actions/pr-checklist@main
