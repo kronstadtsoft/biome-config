@@ -16,7 +16,7 @@ jobs:
     name: pr-checklist
     # A public repository cannot use the action in the private internal repository (kfi-workflow).
     if: github.event.repository.private
-    runs-on: [small]
+    runs-on: [hl-small]
     timeout-minutes: 3
     steps:
       - uses: kronstadtsoft/internal/qms/actions/pr-checklist@main
