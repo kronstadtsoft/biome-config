@@ -1,6 +1,6 @@
 <!--
   GENERATED FILE — DO NOT EDIT HERE.
-  Source: kronstadtsoft/rules · rules/kfi-workflow.md · rule set v2.4.5
+  Source: kronstadtsoft/rules · rules/kfi-workflow.md · rule set v2.5.0
   Change the source there and run: bun run scripts/apply.ts --target <this repo>
   A local edit fails the drift check in CI and is reverted by the next sync.
 -->
@@ -91,15 +91,24 @@ Every pull request, in both tiers and from every author, carries the checklist f
 `.github/pull_request_template.md`:
 
 1. **Simplified.** Run the `simplify` skill once on the whole branch diff.
-2. **Code reviewed.** Review the branch diff at high effort. Use Codex Sol (the
-   `delegate-to-codex` skill) when Codex is installed, because it saves the Claude
-   subscriptions. Otherwise use the `code-review` skill. Fix each confirmed finding, or give a
+2. **Code reviewed.** When Codex is installed and has quota, review the branch diff with Codex
+   Sol at high effort (the `delegate-to-codex` skill). This saves the Claude subscriptions.
+   When Codex is not installed or reports a usage limit, run the `code-review` skill on Opus at
+   medium effort. Do not wait for the Codex quota. Fix each confirmed finding, or give a
    one-line reason for a dismissed finding.
 3. **Verified in a real flow.** Exercise the changed behaviour as a user would, and write what
    you ran and the result.
 
 Write the short SHA of the head commit in `Checked at commit`, then tick the boxes. The
 `ship` skill (plugin `kronstadtsoft-ship`) runs the steps and fills the checklist.
+
+**Merge and deploy without asking. In force from 1 November 2026,** with the Opus fallback in
+step 2. The Administrator made this decision on that date. When the author ticks the three
+boxes, the agent does not ask the owner before the merge or the deploy. Auto-merge is on from
+when the pull request opens. After the merge, the agent deploys by the repository's deploy path:
+
+- Build tier: deploy a `main` commit when its checks are green, e2e included.
+- Production tier: a person creates the release tag. The agent does not create it.
 
 The required check `pr-checklist` fails until every box is ticked, each result is written, and
 `Checked at commit` is the head commit. A new commit makes the check fail again: check the new
